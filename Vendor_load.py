@@ -1,6 +1,6 @@
 import settings_vendor_load as cfg
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 pwd_str =f"Pwd={cfg.password};"
 global conn
@@ -11,7 +11,14 @@ engine = create_engine("mssql+pyodbc:///?odbc_connect=%s" % conn)
 # conn_str = f'mssql+pyodbc://{cfg.username}:{cfg.password}@{cfg.server}/{cfg.database}?driver=ODBC+Driver+17+for+SQL+Server'
 # Create SQL Server engine
 # engine = create_engine(conn_str)
-
+def initialize_load(brandID):
+    if int(brandID) > 0:
+        connection = engine.connect()
+        sql = text('Delete from utb_RetailLoadInitial Where BrandID = ' + str(brandID))
+        print(sql)
+        connection.execute(sql)
+        connection.commit()
+        connection.close()
 filetype = input('''
 Upload ready for:  
 ''').lower()
@@ -95,12 +102,19 @@ if filetype.find('mcm') > 0:
 if filetype.find('loewe') > 0:
     setupid = 310
     filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11','F12','F13','F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21','F22','F23','F24','F25','F26','F27','F28','F29','F30','F31','F32','F33','F34','F35','F36','F37','F38']
-if filetype.find('celine') > 0:
-    setupid = 118
-    filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7']
+
 if filetype.find('miu_miu') > 0:
     setupid = 358
     filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7']
+if filetype.find('celine') > 0:
+    setupid = 118
+    filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7','F8','F9','F10']
+if filetype.find('marni') > 0:
+    setupid = 336
+    filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7','F8']
+if filetype.find('loro') > 0:
+    setupid = 314
+    filecolumns = ['BrandID', 'F0', 'F1','F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11','F12','F13','F14', 'F15', 'F16', 'F17', 'F18', 'F19', 'F20', 'F21','F22','F23','F24','F25','F26','F27','F28','F29','F30','F31','F32','F33','F34','F35','F36']
 
 
 if setupid > 0 :
@@ -110,6 +124,7 @@ if setupid > 0 :
     df.columns = filecolumns
 
     f = df.iloc[2:]
+    initialize_load(setupid)
     df.to_sql('utb_RetailLoadInitial', engine, if_exists='append', index=False)
 
     print ("Upload Completed")
